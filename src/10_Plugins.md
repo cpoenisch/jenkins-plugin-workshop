@@ -1,6 +1,6 @@
 # Jenkins Plugins
 
-With more then 1700 plugins [available](http://stats.jenkins.io) Jenkins build system provides integrations for hundreds of tools and services and therefore allows you to customize almost anything to your needs.
+With more than 1700 plugins [available](http://stats.jenkins.io) Jenkins build system provides integrations for hundreds of tools and services and therefore allows you to customize almost anything to your needs.
 
 ![Top Plugin installations (installations > 2500)](img/201902-top-plugins2500.svg "Top Plugin installations (installations > 2500)")
 *Top Plugin installations (> 2500)*
