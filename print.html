@@ -1,0 +1,618 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Jenkins Plugin Workshop</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="This workshop briefly describes the Jenkins plugin ecosystem and shows how to contribute a change request to an existing plugin.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body class="light">
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="00_Introduction.html">Introduction</a></li><li><a href="10_Plugins.html"><strong aria-hidden="true">1.</strong> Jenkins Plugins</a></li><li><ol class="section"><li><a href="11_Extension.html"><strong aria-hidden="true">1.1.</strong> Extension</a></li><li><a href="12_Installation.html"><strong aria-hidden="true">1.2.</strong> Installation</a></li><li><a href="13_Collaboration.html"><strong aria-hidden="true">1.3.</strong> Collaboration</a></li></ol></li><li><a href="20_Development.html"><strong aria-hidden="true">2.</strong> Development</a></li><li><ol class="section"><li><a href="21_Creating.html"><strong aria-hidden="true">2.1.</strong> Creating</a></li><li><a href="22_Building.html"><strong aria-hidden="true">2.2.</strong> Building</a></li><li><a href="23_Debugging.html"><strong aria-hidden="true">2.3.</strong> Debugging</a></li><li><a href="24_Testing.html"><strong aria-hidden="true">2.4.</strong> Testing</a></li><li><a href="25_Publishing.html"><strong aria-hidden="true">2.5.</strong> Publishing</a></li><li><a href="26_IDE.html"><strong aria-hidden="true">2.6.</strong> IDE Support</a></li></ol></li><li><a href="30_Practice.html"><strong aria-hidden="true">3.</strong> Practice</a></li><li><ol class="section"><li><a href="31_Requirements.html"><strong aria-hidden="true">3.1.</strong> Requirements</a></li><li><a href="32_DevEnv.html"><strong aria-hidden="true">3.2.</strong> Set up Environment</a></li><li><a href="33_Fork.html"><strong aria-hidden="true">3.3.</strong> Fork Plugin</a></li><li><a href="34_Build.html"><strong aria-hidden="true">3.4.</strong> Build Plugin</a></li><li><a href="35_Implement.html"><strong aria-hidden="true">3.5.</strong> Implement Changes</a></li><li><a href="36_Debug.html"><strong aria-hidden="true">3.6.</strong> Debug Plugin</a></li><li><a href="37_Test.html"><strong aria-hidden="true">3.7.</strong> Write Test</a></li><li><a href="38_PR.html"><strong aria-hidden="true">3.8.</strong> Create Pull Request</a></li></ol></li><li><a href="40_Resources.html"><strong aria-hidden="true">4.</strong> Resources</a></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Jenkins Plugin Workshop</h1> 
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="#introduction" id="introduction"><h1>Introduction</h1></a>
+<p>Welcome to this workshop briefly describing the Jenkins plugin ecosystem and showing how to contribute a change request to an existing plugin.</p>
+<a class="header" href="#agenda" id="agenda"><h2>Agenda</h2></a>
+<ol>
+<li><a href="10_Plugins.html">Jenkins Plugins</a></li>
+<li><a href="20_Development.html">Plugin Development</a></li>
+<li><a href="30_Practice.html">Practice</a></li>
+<li><a href="40_Resources.html">Resources</a></li>
+</ol>
+<a class="header" href="#outline" id="outline"><h2>Outline</h2></a>
+<p>When working with Jenkins in your daily business there comes a time when you have a special request that can not be solved using Jenkins core features or is not fully implemented in one of the numerous existing plugins. Before writing a new plugin from scratch you are encouraged to contribute to existing plugins.</p>
+<p>In this workshop you will learn how to change an existing Jenkins plugin and adapt it to your needs. In particular we will change the <a href="https://plugins.jenkins.io/yet-another-build-visualizer">Yet Another Build Visualizer Plugin</a> to show the display name of a build instead of the build number.</p>
+<p>The practice part will guide you through first setting up your development environment and forking the plugin into your GitHub account. After implementing the requested change and extending the unit tests your contribution is pushed back as a GitHub Pull Request.</p>
+<p>Hopefully this workshop will encourage you to actively help improve Jenkins plugins by contributing code, documentation, translations, or tests. <strong>Let's start!</strong></p>
+<p><img src="img/superhero.png" alt="Jenkins Superhero" title="Jenkins Superhero" /></p>
+<p><sup>(Source: <a href="https://jenkins.io/artwork/">Jenkins Artwork</a>)</sup></p>
+<a class="header" href="#jenkins-plugins" id="jenkins-plugins"><h1>Jenkins Plugins</h1></a>
+<p>With more than 1700 plugins <a href="http://stats.jenkins.io">available</a> Jenkins build system provides integrations for hundreds of tools and services and therefore allows you to customize almost anything to your needs.</p>
+<p><img src="img/201902-top-plugins2500.svg" alt="Top Plugin installations (installations &gt; 2500)" title="Top Plugin installations (installations &gt; 2500)" />
+<em>Top Plugin installations (&gt; 2500)</em>
+<sup style="float:right">(Source: <a href="http://stats.jenkins.io/jenkins-stats/svg/svgs.html">Monthly Jenkins Statistics</a>)</sup></p>
+<p> </p>
+<p>Such a powerful extension system also has its drawbacks:</p>
+<ul>
+<li>inherent complexity for new plugin developers</li>
+<li>version conflicts due to dependencies with core and other plugins</li>
+<li>high maintenance installing, configuring and keeping plugins up-to-date</li>
+<li>out-dated, low-quality plugins written by third parties with losing support</li>
+</ul>
+<a class="header" href="#extensions" id="extensions"><h1>Extensions</h1></a>
+<p>Extensibility in Jenkins, for core internals as well as for plugins, is accomplished by definitions of extension points. In general an extension point is an interface or abstract class that defines a contract of what needs to be implemented by contributing classes.</p>
+<p>There a mainly two concepts of <a href="https://jenkins.io/doc/developer/extensibility/#descriptors-and-describables">Descriptors and Describables</a> and <a href="https://jenkins.io/doc/developer/extensibility/#actionable-and-actions">Actionable and Actions</a> in order to create new or extend other extension points.</p>
+<p>The bulk work in developing plugin consists in implementing those extension points. Whenever a plugin implements such extension points by annotating the class with an <em>@Extension</em> mark, Jenkins automatically detects, creates instances and attaches them to the according extension point instance.</p>
+<a class="header" href="#example-extension" id="example-extension"><h2>Example Extension</h2></a>
+<p>The implementation of the <em>BuildStepDescriptor</em> below registers a new build step called <em>SampleBuilder</em> by marking the <em>Descriptor</em> class with the <em>@Extension</em> annotation.</p>
+<pre><code class="language-java">@Extension
+public static class Descriptor extends BuildStepDescriptor&lt;Builder&gt; {
+
+    @Override
+    public String getDisplayName() {
+        return &quot;SampleBuilder&quot;;
+    }
+}
+</code></pre>
+<a class="header" href="#further-reading" id="further-reading"><h2>Further Reading</h2></a>
+<p>The full list of all available extensions can be found in the <a href="https://jenkins.io/doc/developer/extensions/">Extensions Index</a>.</p>
+<p>For further information regarding extending Jenkins in general see <a href="https://jenkins.io/doc/developer/extensibility/">Extensibility</a>.</p>
+<a class="header" href="#plugin-installation" id="plugin-installation"><h1>Plugin Installation</h1></a>
+<p>Jenkins provides two common methods for installing or updating plugins on the master:</p>
+<ul>
+<li>Plugin Manager (<a href="#jenkins-update-center">Update Center</a>) in the web UI</li>
+<li>Built-in command line interface (<a href="#jenkins-cli">CLI</a>)</li>
+</ul>
+<p>After successful download of a plugin and its dependencies a Jenkins master restart is only required if the plugin itself or one of the dependencies are updated from a previous installed version. Otherwise the plugin changes take effect directly.</p>
+<a class="header" href="#jenkins-update-center" id="jenkins-update-center"><h2>Jenkins Update Center</h2></a>
+<p>Search for plugins under the &quot;Available&quot; tab through the &quot;Manage Jenkins &gt; Manage Plugins&quot; view. Select one or multiple plugins and click &quot;Install without restart&quot; to activate them immediately.</p>
+<p><img src="img/plugin-search.png" alt="Plugin Search" title="Plugin Search" /></p>
+<p>After building a self-contained .hpi file with all necessary code, resources and other dependencies it can be uploaded manually from the web UI through &quot;Advanced&quot; tab.</p>
+<p><img src="img/plugin-upload.png" alt="Plugin Upload" title="Plugin Upload" /></p>
+<a class="header" href="#jenkins-cli" id="jenkins-cli"><h2>Jenkins CLI</h2></a>
+<p>The <a href="https://jenkins.io/doc/book/managing/cli/">Jenkins CLI</a> provides a plugin installation command:</p>
+<pre><code class="language-java">java -jar jenkins-cli.jar -s &lt;JENKINS_URL&gt;:&lt;JENKINS_PORT&gt;/ install-plugin &lt;SOURCE&gt;
+</code></pre>
+<p>The <em>SOURCE</em> part can be given as a local file reference (.hpi file path), download URL or as the short name of an existing plugin.</p>
+<a class="header" href="#further-reading-1" id="further-reading-1"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://jenkins.io/doc/book/managing/plugins/">Managing Plugins</a></li>
+<li><a href="https://plugins.jenkins.io/">Plugins Index</a></li>
+</ul>
+<a class="header" href="#collaboration" id="collaboration"><h1>Collaboration</h1></a>
+<p>The Jenkins project and its huge community are always looking for new contributers and encourage you to participate in many ways. Help others get most out of Jenkins, provide your feedback, review changes to code or documentation, or contribute actively to Jenkins core and the numerous plugins.</p>
+<p>As a plugin contributor you can <a href="https://wiki.jenkins.io/display/JENKINS/Adopt+a+Plugin">adopt a plugin</a> or pick up a feature request or bug report from the issue tracker and <a href="https://wiki.jenkins.io/display/JENKINS/Pull+Request+to+Repositories">send a pull request</a>. Alternatively, start <a href="https://wiki.jenkins.io/display/JENKINS/Before+starting+a+new+plugin">writing a new plugin</a> if none of the existing plugins cover your needs.</p>
+<a class="header" href="#further-reading-2" id="further-reading-2"><h2>Further Reading</h2></a>
+<p>The following resources will help you to <a href="https://jenkins.io/participate/">participate and contribute</a> to Jenkins ecosystem:</p>
+<ul>
+<li><a href="https://github.com/jenkinsci/">GitHub Source Code</a> (also have a look on README.md, CONTRIBUTING.md and LICENSE files)</li>
+<li><a href="https://jenkins.io/doc/">Jenkins Documentation</a></li>
+<li><a href="https://issues.jenkins-ci.org/browse/JENKINS/">JIRA Issue Tracker</a></li>
+<li><a href="https://jenkins.io/mailing-lists/">Mailing Lists</a></li>
+</ul>
+<a class="header" href="#development" id="development"><h1>Development</h1></a>
+<p>This section will cover the main aspects in order to create a new Jenkins plugin from scratch or to contribute to an existing one.</p>
+<ul>
+<li><a href="21_Creating.html">Creating</a></li>
+<li><a href="22_Building.html">Building</a></li>
+<li><a href="23_Debugging.html">Debugging</a></li>
+<li><a href="24_Testing.html">Testing</a></li>
+<li><a href="25_Publishing.html">Publishing</a></li>
+<li><a href="26_IDE.html">IDE Support</a></li>
+</ul>
+<a class="header" href="#creating-a-new-plugin" id="creating-a-new-plugin"><h1>Creating a new plugin</h1></a>
+<a class="header" href="#plugin-archetype" id="plugin-archetype"><h2>Plugin Archetype</h2></a>
+<p>A new plugin can be created from scratch by running following Maven command:</p>
+<pre><code class="language-bash">mvn -U archetype:generate -Dfilter=io.jenkins.archetypes:
+</code></pre>
+<p>This invokes the generation of a new plugin from several project archetypes and requests for all mandatory information like <em>groupId</em>, <em>artifactId</em>, initial <em>version</em> and <em>package</em> structure.</p>
+<a class="header" href="#plugin-structure" id="plugin-structure"><h2>Plugin Structure</h2></a>
+<p>The plugin workspace is structured as follows:</p>
+<ul>
+<li><strong>Project root</strong>: Maven build configuration pom.xml and all the project subdirectories</li>
+<li><strong>src/main/java</strong>: Deliverable Java source code files</li>
+<li><strong>src/main/resources</strong>: Deliverable resources, such as Jelly and property files for UI</li>
+<li><strong>src/main/webapp</strong>: Static resources, such as images and HTML files</li>
+<li><strong>src/test/java</strong>: Unit testing classes</li>
+<li><strong>src/test/resources</strong>: Necessary resources for unit tests only</li>
+</ul>
+<a class="header" href="#maven-pom" id="maven-pom"><h2>Maven POM</h2></a>
+<p>Maven is generally used to build Jenkins plugins and stores the configuration in the pom.xml located at the root directory. New plugin are based on the Plugin Parent POM:</p>
+<pre><code class="language-xml">&lt;parent&gt;
+    &lt;groupId&gt;org.jenkins-ci.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;plugin&lt;/artifactId&gt;
+    &lt;version&gt;3.42&lt;/version&gt;
+    &lt;relativePath /&gt;
+&lt;/parent&gt;
+</code></pre>
+<p>The Jenkins baseline version and Java level are mandatory and can be set via Maven property:</p>
+<pre><code class="language-xml">&lt;properties&gt;
+    &lt;jenkins.version&gt;2.164.1&lt;/jenkins.version&gt;
+    &lt;java.level&gt;8&lt;/java.level&gt;
+&lt;/properties&gt;
+</code></pre>
+<a class="header" href="#further-reading-3" id="further-reading-3"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Before+starting+a+new+plugin">Start a new plugin</a></li>
+<li><a href="https://github.com/jenkinsci/plugin-pom">Jenkins Parent POM</a></li>
+</ul>
+<a class="header" href="#building-a-plugin" id="building-a-plugin"><h1>Building a plugin</h1></a>
+<p>To build a plugin run following Maven command:</p>
+<pre><code class="language-bash">mvn install
+</code></pre>
+<p>When rebuilding a plugin it is sometimes helpful to clean the target directory previously:</p>
+<pre><code class="language-bash">mvn clean install
+</code></pre>
+<p>This will create a plugin artifact at <em>target/&lt;plugin&gt;.hpi</em> that can be deployed manually to Jenkins.</p>
+<a class="header" href="#ci-integration" id="ci-integration"><h2>CI Integration</h2></a>
+<p>Hosted Jenkins plugins are automatically built with each commit by placing <em>Jenkinsfile</em> at project root.</p>
+<pre><code class="language-bash">#!groovy
+buildPlugin()
+</code></pre>
+<a class="header" href="#further-reading-4" id="further-reading-4"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://maven.apache.org/index.html">Apache Maven Project</a></li>
+<li><a href="https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html">Maven Build Lifecycle</a></li>
+<li><a href="https://github.com/jenkins-infra/pipeline-library">Pipeline Global Library</a></li>
+</ul>
+<a class="header" href="#debugging-a-plugin" id="debugging-a-plugin"><h1>Debugging a plugin</h1></a>
+<p>With help of the <a href="https://jenkinsci.github.io/maven-hpi-plugin">Maven HPI Plugin</a> Jenkins plugins can be started in a local Jenkins sandbox.</p>
+<p>For debugging purposes run following Maven command from plugin project directory:</p>
+<pre><code class="language-bash">mvn hpi:run
+</code></pre>
+<p>By default, the debugging instance is then available at <a href="http://localhost:8080/jenkins">http://localhost:8080/jenkins</a> in your browser.</p>
+<p>In order to launch Jenkins on a different port than 8080 use this system property:</p>
+<pre><code class="language-bash">mvn hpi:run -Djetty.port=8090
+</code></pre>
+<p>Changing the default context path can be achieved by setting this system property:</p>
+<pre><code class="language-bash">mvn hpi:run -Dhpi.prefix=/debug
+</code></pre>
+<a class="header" href="#debugging-from-ide" id="debugging-from-ide"><h2>Debugging from IDE</h2></a>
+<p>Starting a debug session from your IDE requires to set special Maven options:</p>
+<p><code>MAVEN_OPTS=&quot;-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=n&quot;</code></p>
+<p>This allows to hook into the instance and set break points while being in IDE debugging mode.</p>
+<p>Changing code while debugging is supported for Jelly/Groovy views, properties and help files with simple page reload in the browser. Utilizing from JVM's hot swap feature does not support changing method signatures. Changes in pom.xml also requires to restart the debugging process.</p>
+<a class="header" href="#further-reading-5" id="further-reading-5"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Plugin+tutorial#Plugintutorial-Changingcodewhiledebugging">Plugin Debugging</a></li>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Developing+with+JRebel">Developing with JRebel</a></li>
+<li><a href="https://www.jetbrains.com/help/idea/debugging-code.html">IDEA Debugging</a></li>
+</ul>
+<a class="header" href="#testing-a-plugin" id="testing-a-plugin"><h1>Testing a plugin</h1></a>
+<p>Next to well-known unit testing frameworks like JUnit, TestNG, Spock etc. which can be easily integrated in Java projects, Jenkins provides an own test harness framework built around JUnit to make testing plugins much easier. There are several test techniques included like stubbing, HTML scraping or round-trip testing and provides multiple test harness annotations.</p>
+<p>Unit tests can be executed with following Maven command:</p>
+<pre><code class="language-bash">mvn test
+</code></pre>
+<p>While building the plugin unit tests can be skipped by appending the Maven command as follows:</p>
+<pre><code class="language-bash">mvn install -DskipTests
+</code></pre>
+<a class="header" href="#further-reading-6" id="further-reading-6"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Unit+Test">Jenkins Unit Tests</a></li>
+</ul>
+<a class="header" href="#publishing-a-plugin" id="publishing-a-plugin"><h1>Publishing a plugin</h1></a>
+<a class="header" href="#packaging" id="packaging"><h2>Packaging</h2></a>
+<p>To create a local distribution image of your plugin run the following Maven command:</p>
+<pre><code class="language-bash">mvn package
+</code></pre>
+<p>After successful packaging an plugin artifact should be created at <em>target/*.hpi</em>. This .hpi file can then be manually uploaded to the <a href="/12_Installation.html#jenkins-update-center">Jenkins Update Center</a> or directly placed in the Jenkins plugin directory (located at <em>$JENKINS_HOME/plugins</em>). The Jenkins master needs to be restarted afterwards.</p>
+<a class="header" href="#hosting" id="hosting"><h2>Hosting</h2></a>
+<p>In order to officially host a new plugin in the Jenkins Update Center, meaning it will be available to all Jenkins users worldwide, you first have to meet some prerequisites regarding the plugin structure and open source licensing. Fulfilling those you can request hosting your plugin repository under the <a href="https://github.com/jenkinsci">Jenkins GitHub organization</a>. It is recommended to add your maintainer information and to create a well-documented and up-to-date wiki page for your plugin.</p>
+<a class="header" href="#further-reading-7" id="further-reading-7"><h2>Further Reading</h2></a>
+<ul>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Hosting+Plugins">Hosting Plugins</a></li>
+</ul>
+<a class="header" href="#ide-support" id="ide-support"><h1>IDE Support</h1></a>
+<p>Because most Jenkins plugins are based on Java and are built with Maven any IDE software can be chosen that provides JVM language and Maven framework support. The <a href="https://github.com/jenkinsci/maven-hpi-plugin">Maven HPI Plugin</a> provides an easy way to integrate the plugin lifecycles into the Maven build process.</p>
+<p>With help of the <a href="https://github.com/jenkinsci/gradle-jpi-plugin">Gradle JPI Plugin</a> Groovy and Gradle can be used as an alternative way to build and release such configured plugins.</p>
+<a class="header" href="#jelly-views" id="jelly-views"><h3>Jelly Views</h3></a>
+<p>XML based tag libraries for <a href="https://wiki.jenkins.io/display/JENKINS/Writing+Jelly+views+with+IDE+assistance">writing Jelly views</a> are supported by Stapler plugins available for most modern IDEs (see links to below).</p>
+<a class="header" href="#internationalization" id="internationalization"><h3>Internationalization</h3></a>
+<p>Support for different languages can be achieved by <a href="https://wiki.jenkins.io/display/JENKINS/Internationalization">internationalization</a> features in Stapler plugins.</p>
+<a class="header" href="#intellij-idea" id="intellij-idea"><h3>IntelliJ IDEA</h3></a>
+<ul>
+<li><a href="https://www.jetbrains.com/idea">Website</a></li>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/IntelliJ+IDEA+plugin+for+Stapler">Stapler Plugin</a></li>
+</ul>
+<a class="header" href="#netbeans" id="netbeans"><h3>NetBeans</h3></a>
+<ul>
+<li><a href="https://netbeans.apache.org/">Website</a></li>
+<li><a href="https://github.com/stapler/netbeans-stapler-plugin">Stapler Plugin</a></li>
+</ul>
+<a class="header" href="#eclipse" id="eclipse"><h3>Eclipse</h3></a>
+<ul>
+<li><a href="https://www.eclipse.org/eclipseide/">Website</a></li>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Jenkins+plugin+development+with+Eclipse">Eclipse Development Guide</a></li>
+<li><a href="https://wiki.jenkins.io/display/JENKINS/Eclipse+alternative+build+setup">Alternative Eclipse Setup</a></li>
+</ul>
+<a class="header" href="#practice" id="practice"><h1>Practice</h1></a>
+<a class="header" href="#task" id="task"><h2>Task</h2></a>
+<p>Show the build name instead of the build number in <a href="https://plugins.jenkins.io/yet-another-build-visualizer">Yet Another Build Visualizer</a> plugin.</p>
+<p>You will change the Build Flow view from</p>
+<p><img src="img/yabv_before.png" alt="Build Flow Before" title="Build Flow Before" /></p>
+<p>to named builds</p>
+<p><img src="img/yabv_after.png" alt="Build Flow After" title="Build Flow After" /></p>
+<hr />
+<p><sup>Note: The original change request in <a href="https://issues.jenkins-ci.org/browse/JENKINS-55893">JENKINS-55893</a> has been already implemented with this <a href="https://github.com/jenkinsci/yet-another-build-visualizer-plugin/commit/e23e04439b14cb3510a741e0e35a239d8c666126">commit</a> but is used to be reimplemented just for learning purposes of this workshop.</sup></p>
+<a class="header" href="#requirements" id="requirements"><h1>Requirements</h1></a>
+<p>For the practice part meet following prerequisites:</p>
+<ul>
+<li>Personal <a href="https://github.com">GitHub</a> Account</li>
+<li><a href="https://git-scm.com">Git</a></li>
+<li><a href="https://www.oracle.com/technetwork/java/javase/index.html">JDK</a> 8+</li>
+<li><a href="https://maven.apache.org">Maven</a> 3+</li>
+<li>IDE (<a href="https://www.jetbrains.com/idea">IntelliJ IDEA</a>, <a href="http://eclipse.org">Eclipse</a>)</li>
+<li>Alternatives: <a href="https://gitpod.io">GitPod</a>, <a href="https://www.docker.com">Docker</a></li>
+</ul>
+<a class="header" href="#set-up-the-development-environment" id="set-up-the-development-environment"><h1>Set up the development environment</h1></a>
+<a class="header" href="#task-1" id="task-1"><h2>Task</h2></a>
+<p>Follow the instructions below to prepare your <a href="#local-toolchain">local development environment</a>, alternatively run with <a href="#docker">Docker</a> or choose the browser-based online IDE powered by <a href="#gitpod">GitPod</a>.</p>
+<a class="header" href="#local-toolchain" id="local-toolchain"><h3>Local Toolchain</h3></a>
+<p>For building and developing the Jenkins plugin <a href="#jdk">Java SE Development Kit</a> and <a href="#maven">Maven</a> are required.</p>
+<a class="header" href="#ide" id="ide"><h4>IDE</h4></a>
+<p>The preferred IDE for this workshop is <a href="https://www.jetbrains.com/idea">IntelliJ IDEA Community Edition</a> because it is free and Maven is shipped with the installation. Alternatively take the IDE of your choice (Eclipse, NetBeans, etc.) you are most familiar with.</p>
+<a class="header" href="#jdk" id="jdk"><h4>JDK</h4></a>
+<p>Jenkins core is based on Java and therefore most of the Jenkins plugins also relies on Java or JVM compatible languages like Groovy. For this workshop we will use JDK 8 you can download for free from the <a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle website</a> and install it afterwards. Ensure this JDK is properly configured in your IDE.</p>
+<a class="header" href="#maven" id="maven"><h4>Maven</h4></a>
+<p>Most of the Jenkins plugins utilize Maven as the preferred build management system. The plugin to be changed is already configured as a Maven project providing a <em>pom.xml</em>.</p>
+<p>Download Maven from related <a href="https://maven.apache.org/download.cgi">Apache project</a> and extract it to an arbitrary path. Afterwards ensure the <em>bin/</em> subdirectory is added to your <em>PATH</em> in order to invoke <em>mvn</em> from command line.</p>
+<p><em>IDEA</em>: Use the bundled Maven version or change it via <em>Settings &gt; Build Tools &gt; Maven</em></p>
+<p>In order to make Jenkins repositories available during Maven builds edit your <em>~/.m2/settings.xml</em> (Windows: <em>%USERPROFILE%\.m2\settings.xml</em>) as follows:</p>
+<pre><code class="language-xml">&lt;settings&gt;
+  &lt;pluginGroups&gt;
+    &lt;pluginGroup&gt;org.jenkins-ci.tools&lt;/pluginGroup&gt;
+  &lt;/pluginGroups&gt;
+
+  &lt;profiles&gt;
+    &lt;!-- Give access to Jenkins plugins --&gt;
+    &lt;profile&gt;
+      &lt;id&gt;jenkins&lt;/id&gt;
+      &lt;activation&gt;
+        &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+      &lt;/activation&gt;
+      &lt;repositories&gt;
+        &lt;repository&gt;
+          &lt;id&gt;repo.jenkins-ci.org&lt;/id&gt;
+          &lt;url&gt;https://repo.jenkins-ci.org/public/&lt;/url&gt;
+        &lt;/repository&gt;
+      &lt;/repositories&gt;
+      &lt;pluginRepositories&gt;
+        &lt;pluginRepository&gt;
+          &lt;id&gt;repo.jenkins-ci.org&lt;/id&gt;
+          &lt;url&gt;https://repo.jenkins-ci.org/public/&lt;/url&gt;
+        &lt;/pluginRepository&gt;
+      &lt;/pluginRepositories&gt;
+    &lt;/profile&gt;
+  &lt;/profiles&gt;
+  &lt;mirrors&gt;
+    &lt;mirror&gt;
+      &lt;id&gt;repo.jenkins-ci.org&lt;/id&gt;
+      &lt;url&gt;https://repo.jenkins-ci.org/public/&lt;/url&gt;
+      &lt;mirrorOf&gt;m.g.o-public&lt;/mirrorOf&gt;
+    &lt;/mirror&gt;
+  &lt;/mirrors&gt;
+&lt;/settings&gt;
+</code></pre>
+<a class="header" href="#docker" id="docker"><h3>Docker</h3></a>
+<p>For building and debugging the plugin inside a Docker container you can use following commands:</p>
+<p><strong>Build Plugin</strong></p>
+<pre><code class="language-bash">docker run -it --rm -v &quot;$PWD&quot;:/usr/src/app -v &quot;$HOME&quot;/.m2:/root/.m2 \
+-w /usr/src/app maven:3-jdk-8-alpine mvn install
+</code></pre>
+<p><strong>Run Debugging Instance</strong></p>
+<pre><code class="language-bash">docker run -it -d --rm -p 8080:8080 -v &quot;$PWD&quot;:/usr/src/app -v &quot;$HOME&quot;/.m2:/root/.m2 \
+-w /usr/src/app maven:3-jdk-8-slim mvn hpi:run
+</code></pre>
+<!-- docker run -it --rm -v `pwd`:/usr/src/app -v /c/Users/ChristianPoe/.m2:/root/.m2 -w /usr/src/app maven:3-jdk-8-alpine mvn install -->
+<!-- docker run -it -d --rm -p 8080:8080 -v `pwd`:/usr/src/app -v /c/Users/ChristianPoe/.m2:/root/.m2 -w /usr/src/app -e "MAVEN_OPTS=-Djava.awt.headless=true" maven:3-jdk-8-alpine mvn hpi:run -->
+<a class="header" href="#gitpod" id="gitpod"><h3>GitPod</h3></a>
+<p>As an handy alternative without the need to install any tools locally you can use an one-click online IDE.
+<a href="https://gitpod.io/">GitPod</a> provides a ready-to-code development environment in your browser.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li>Prefix any GitHub URL with <a href="https://gitpod.io#">https://gitpod.io#</a>, e.g.: <br />
+<a href="https://gitpod.io/#https://github.com/cpoenisch/yabv-workshop-plugin">https://gitpod.io/#https://github.com/cpoenisch/yabv-workshop-plugin</a></li>
+<li>Or use the <a href="https://docs.gitpod.io/20_Browser_Extension.html">browser extension</a> for Firefox or Chrome</li>
+</ul>
+<a class="header" href="#fork-the-plugin" id="fork-the-plugin"><h1>Fork the plugin</h1></a>
+<a class="header" href="#task-2" id="task-2"><h2>Task</h2></a>
+<p>Log in to your GitHub account and fork the repository <a href="https://github.com/cpoenisch/yabv-workshop-plugin">cpoenisch/yabv-workshop-plugin</a> into your personal account. Then copy the repository URL and clone the repository to your local machine, alternatively create a new project from Git Version Control in your IDE.</p>
+<a class="header" href="#hints" id="hints"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<ul>
+<li>Study the <a href="https://help.github.com/en/categories/setup">GitHub Setup</a> guide how to use a GitHub account</li>
+<li>Read about <a href="https://help.github.com/en/articles/fork-a-repo">GitHub Forks</a>
+</details></li>
+</ul>
+<a class="header" href="#build-the-plugin" id="build-the-plugin"><h1>Build the plugin</h1></a>
+<a class="header" href="#task-3" id="task-3"><h2>Task</h2></a>
+<p>First import the cloned plugin repository into your IDE as a Maven project.</p>
+<p>Run a full build by invoking Maven from command line or IDE integrated terminal:</p>
+<pre><code class="language-bash">mvn install
+</code></pre>
+<p>Watch the build log for any build failures and ensure a .hpi file is created in the target directory.</p>
+<p>Optionally, install the built plugin to an existing Jenkins master instance.</p>
+<a class="header" href="#hints-1" id="hints-1"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<p><strong>Maven Repositories</strong></p>
+<p>Add Jenkins plugin repositories to pom.xml or your .m2/settings.xml</p>
+<pre><code class="language-xml">&lt;pluginRepositories&gt;
+  &lt;pluginRepository&gt;
+    &lt;id&gt;repo.jenkins-ci.org&lt;/id&gt;
+      &lt;url&gt;https://repo.jenkins-ci.org/public/&lt;/url&gt;
+  &lt;/pluginRepository&gt;
+&lt;/pluginRepositories&gt;
+</code></pre>
+<p><strong>IntelliJ IDEA</strong></p>
+<ul>
+<li>Add Maven framework support</li>
+<li>Configure JDK 8 as project SDK and set Java language level to 8</li>
+</ul>
+<p>Ensure that following directories are marked as:</p>
+<ul>
+<li><strong>Source Root</strong>: <em>src/main/java</em></li>
+<li><strong>Resources Root</strong>: <em>src/main/resources</em></li>
+<li><strong>Test Source Root</strong>: <em>src/test/java</em></li>
+<li><strong>Test Resources Root</strong>: <em>src/test/resources</em></li>
+<li><strong>Excluded</strong>: <em>target</em>
+</details></li>
+</ul>
+<a class="header" href="#implement-the-changes" id="implement-the-changes"><h1>Implement the changes</h1></a>
+<a class="header" href="#task-4" id="task-4"><h2>Task</h2></a>
+<p>Change the Groovy view rendering the Build Flow from displaying the build display name instead of the build number. Rebuild the project to check for any syntax or compiling errors.</p>
+<a class="header" href="#hints-2" id="hints-2"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<ul>
+<li>Take a look at the JavaDocs for available <a href="https://javadoc.jenkins.io/hudson/model/AbstractBuild.html">AbstractBuild</a> methods</li>
+<li>Source file for the Groovy view is located in <a href="https://github.com/cpoenisch/yabv-workshop-plugin/blob/master/src/main/resources/com/axis/system/jenkins/plugins/downstream/yabv/BuildFlowAction/buildFlow.groovy">resources</a></li>
+<li>Change the current implementation at line 46 from</li>
+</ul>
+<pre><code class="language-Java">span(&quot;${build.parent.name} #${build.number}&quot;)
+</code></pre>
+<p>to</p>
+<pre><code class="language-Java">span(&quot;${build.parent.name} ${build.displayName}&quot;)
+</code></pre>
+<p></details></p>
+<a class="header" href="#debug-the-plugin" id="debug-the-plugin"><h1>Debug the plugin</h1></a>
+<a class="header" href="#task-5" id="task-5"><h2>Task</h2></a>
+<p>Instantiate a local Jenkins instance for debugging purposes by executing following Maven command:</p>
+<pre><code class="language-bash">mvn hpi:run
+</code></pre>
+<p>Open the local Jenkins instance at <a href="http://localhost:8080/jenkins">http://localhost:8080/jenkins</a> in your browser.</p>
+<p>In order to be able to change the display name of a build install the <a href="http://wiki.jenkins.io/display/JENKINS/Build+Name+Setter+Plugin">Build Name Setter</a> beforehand. Then create at least two dependent Freestyle jobs and configure them to set the build name to anything other than the build number. Start a new upstream build and check if the change you did is working properly.</p>
+<a class="header" href="#hints-3" id="hints-3"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<ul>
+<li>Create an upstream job that triggers a downstream job</li>
+<li>Set the build name in the Build Environment section</li>
+<li>The default build trigger can be selected from post-build actions
+</details></li>
+</ul>
+<a class="header" href="#write-unit-tests" id="write-unit-tests"><h1>Write unit tests</h1></a>
+<a class="header" href="#task-optional" id="task-optional"><h2>Task (optional)</h2></a>
+<p>Write a new unit test for the implemented change that is divided into following parts:</p>
+<p><strong>ARRANGE</strong>: Create an upstream job and a downstream job with arbitrary build names <br />
+<strong>ACT</strong>: Schedule a new upstream build <br />
+<strong>ASSERT</strong>: Assert that the job and build pages contain a Build Flow graph with the set build names</p>
+<p>Trigger the new test directly from your IDE or run all tests by executing following Maven command:</p>
+<pre><code class="language-bash">mvn test
+</code></pre>
+<a class="header" href="#hints-4" id="hints-4"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<ul>
+<li>Configure the <a href="http://wiki.jenkins.io/display/JENKINS/Build+Name+Setter+Plugin">Build Name Setter</a> plugin as a test dependency inside pom.xml</li>
+<li>As an alternative use a pipeline test setup setting <em>currentBuild.displayName</em> directly</li>
+<li>Use the <a href="https://wiki.jenkins.io/display/JENKINS/Unit+Test">Jenkins Test Harness</a> providing a <a href="https://javadoc.jenkins.io/component/jenkins-test-harness/org/jvnet/hudson/test/JenkinsRule.html">@JenkinsRule</a> to setup the jobs</li>
+<li>Utilize <a href="https://wiki.jenkins.io/display/JENKINS/Unit+Test#UnitTest-HTMLscraping">XPath</a> and <a href="https://wiki.jenkins.io/display/JENKINS/Unit+Test#UnitTest-Webpageassertions">WebAssert</a> features to test the generated HTML
+</details></li>
+</ul>
+<a class="header" href="#create-a-pull-request" id="create-a-pull-request"><h1>Create a Pull Request</h1></a>
+<a class="header" href="#task-6" id="task-6"><h2>Task</h2></a>
+<p>Commit all your changes to your local development branch and push them to your remote branch.</p>
+<p>Navigate to the &quot;Pull requests&quot; tab of your forked GitHub repository and click the &quot;New pull request&quot; button. Ensure that the correct origin repository (<a href="https://github.com/cpoenisch/yabv-workshop-plugin">cpoenisch/yabv-workshop-plugin</a>) with master branch is set as the base and you head to your own forked branch repository.</p>
+<p>Choose a meaningful title for your pull request and give a brief description what you have changed. After your pull request has been reviewed, it can be merged into the repository.</p>
+<a class="header" href="#hints-5" id="hints-5"><h2>Hints</h2></a>
+<p><details>
+<summary>Show / Hide</summary></p>
+<ul>
+<li>Read about creating <a href="https://help.github.com/en/articles/creating-a-pull-request">GitHub Pull Requests</a>
+</details></li>
+</ul>
+<a class="header" href="#resources" id="resources"><h2>Resources</h2></a>
+<ul>
+<li><a href="https://jenkins.io/participate/">Jenkins Contribution Guide</a></li>
+<li><a href="https://jenkins.io/doc/developer/book/">Jenkins Developer Reference</a></li>
+<li><a href="https://jenkins.io/doc/developer/plugin-development/">Jenkins Plugin Development</a></li>
+<li><a href="https://jenkins.io/doc/developer/tutorial/">Jenkins Plugin Tutorial</a></li>
+<li><a href="https://jenkins.io/doc/developer/guides/">Jenkins How-To Guides</a></li>
+<li><a href="https://jenkins.io/doc/developer/javadoc/">Jenkins Javadocs</a></li>
+<li><a href="https://jenkins.io/doc/book/glossary">Jenkins Glossary</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
