@@ -1,0 +1,11 @@
+[book]
+title = "Jenkins Plugin Workshop"
+description = "This workshop briefly describes the Jenkins plugin ecosystem and shows how to contribute a change request to an existing plugin."
+authors = ["Christian Pönisch"]
+multilingual = false
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = false
+preprocess = ["links", "index"]
